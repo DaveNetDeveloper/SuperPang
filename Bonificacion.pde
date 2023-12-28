@@ -39,7 +39,7 @@ class Bonificacion {
       }
     }
   }
-
+  
   void mostrar() { //  
     if(temporizador.getSecondsRemaining() < 5 && !detenida) { 
       if (frameCount % 20 == 0) {  // según la frecuencia de parpadeo 

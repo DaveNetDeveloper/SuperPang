@@ -25,7 +25,12 @@ class Bala {
     float d = dist(x, y, burbuja.x, burbuja.y);
     return d < tamaño/2 + burbuja.diametro / 2;
   }
-
+  
+  boolean colision(Pajaro pajaro) {
+    float d = dist(x, y, pajaro.x, pajaro.y);
+    return d < tamaño/2 + pajaro.imagen.height / 2;
+  }
+  
   void destruir() {
     //println("Destruir Bala");
   }

@@ -6,11 +6,16 @@ class Pajaro {
   float amplitudY;
   float frecuenciaY;
   float tiempo = 0;
-  PImage imagen = loadImage("images/pajaro.png");
+  PImage imagen = loadImage("images/pajaro.png"); 
+  PImage imagen2 = loadImage("images/boom.png"); 
   Pelota[] pelotas;
   Timer temporizador; 
   boolean disparar = false;
   boolean detenida = false;
+  boolean colisionado = false; // Bandera para controlar si la burbuja ha colisionado
+  //int numColisiones = 0; // Bandera para controlar si la burbuja ha colisionado
+  int cambioFrames = 30;  // Número de frames durante los cuales se cambiará la imagen1 por la imagen2
+  int frameActual = 0; // posicion inicial para el contador de frames
   
   // 
   Pajaro(float x, float y, float amplitudY, float frecuenciaY, float velocidadX) {
@@ -47,7 +52,26 @@ class Pajaro {
   
   // 
   void dibujar() {
-    image(imagen, x, y, 60, 60); // 
+    
+    if(!colisionado) {
+      image(imagen, x, y, 60, 60); //
+    }
+    else {
+      
+      CrearBonificacion(x, y, true); //  
+      bonificacionPajaroEnCurso = true;
+      //println("bonificacionPajaroEnCurso: " + bonificacionPajaroEnCurso);
+      
+      if (frameActual < cambioFrames) {
+        // Cambiar la imagen del pajaro durante los frames indicados en 'cambioFrames'
+        image(imagen2, x, y, 60, 60); //
+        frameActual++;
+      } else {
+        // Volver al estado original de la imagen 
+        frameActual = 0;
+        colisionado = false;
+      }
+    }   
   }
   
   void disparar() { // 

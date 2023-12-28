@@ -19,25 +19,8 @@ class Burbuja {
   }
   
   void destruir() {
-    if(random(0, 10) > 7) { // % de probabilidad de generar bonificación
-      PImage img = null;
-      switch(int(random(1, 5))) {
-        case 1:
-          img = bonificacionImg; 
-        break;
-        case 2:
-           img = bonificacionTiempoImg; 
-        break;
-        case 3:
-           img = bonificacionTntImg; 
-        break;  
-        case 4:
-           img = bonificacionDulceImg; 
-        break;  
-      } 
-      //Generar una bonificación al destruir la burbuja
-      bonificaciones.add(new Bonificacion(this.x, this.y, 30, img));
-   }
+     
+    CrearBonificacion(this.x, this.y, false); // 
   }
   
   boolean haColisionado() {
@@ -86,6 +69,7 @@ class Burbuja {
   void mostrar() { // 
     image(imagen, x, y, diametro+5, diametro); 
   }
+ 
   
   void detener() { // 
     detenida = true;

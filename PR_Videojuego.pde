@@ -19,13 +19,17 @@
       suman puntos al marcador. El tipo de recompensa se genera de manera aleatoria. Cada bonificación incorpora un temporizador 
       que controla el tiempo que ha de permanecer en patalla antes de ser eliminado. 
     
-    * Pajaro: Es un eneemigo que sobrevuela la pantalla. No se puede eliminar con una bala. Al transcurrir un tiempo random este enemigo
-      dispara una pelota que puede impactar y dañar al jugador.
-
+    * Pajaro: Es un enemigo que sobre-vuela la pantalla con un vuelvo oscilatorio. No se puede eliminar aunque si se puede impactar 
+      con una bala para obtener puntos y además una recompensa. Una vez recogida la recompensa se podrá genenear otra con nuevos disparos.
+      Al transcurrir un tiempo random este enemigo dispara una pelota con un movimiento parabolico que puede impactar y dañar al jugador. 
+      Cuando la pelota es disparada, su trayectoria sigue una forma parabólica debido a la influencia de la gravedad. Cuando la pelota 
+      golpea el suelo simula una colisión elástica que tiene en cuenta la velocidad y el ángulo para el calculo de la dirección. Debido a la 
+      la fricción en los rebotes, la pelota sufre la pérdida de fuerza. 
+       
     * Gráficos textuales: En pantalla también vemos varios panales textuales, como por ejemplo:
         ** Puntuación: Total de puntos acumulados en la partida.
         ** Tiempo restante: segundos restantes de partida.
-        ** 10 últimos segundos: cuenta atrás.
+        ** 10 últimos segundos de partida: cuenta atrás.
         ** Nivel completado o fallado. 
            
     * Efectos de sonido: Se cargan y utilizan varios sonidos en algunos momentos de acción  como por ejemplo, 
@@ -77,8 +81,10 @@ int tiempoRestante; // Tiempo restante en milisegundos
 int tiempoInicio; // Tiempo en que se inició el temporizador
 int tiempoRestanteEnSegundos; // 
 
+boolean bonificacionPajaroEnCurso = false; // 
+
 Minim minim; // objeto Minim para gestión de audios
-AudioPlayer[] players = new AudioPlayer[8]; // Puedes ajustar el tamaño según la cantidad de archivos de audio que tienes
+AudioPlayer[] players = new AudioPlayer[9]; // Puedes ajustar el tamaño según la cantidad de archivos de audio que tienes
 
 PFont font;
 
@@ -93,7 +99,8 @@ enum FX {
   Fail,
   Fail2,
   Ko,
-  Theme
+  Theme,
+  Bird
 }
 // enumeración para facilitar la gestión de los estados de la partida
 enum LevelState {
@@ -219,6 +226,7 @@ void cargarFXs() {
   players[5] = minim.loadFile("sounds/fail-2.mp3");
   players[6] = minim.loadFile("sounds/ko.mp3");
   players[7] = minim.loadFile("sounds/theme.mp3");
+  players[8] = minim.loadFile("sounds/gritoPajaro.mp3");
 }
 
 // 
@@ -255,6 +263,10 @@ void reproducirSonido(FX fx) {
       case Theme:
         players[7].rewind(); // Reinicia la reproducción
         players[7].loop(); // Inicia la reproducción
+        break;
+      case Bird:
+        players[8].rewind(); // Reinicia la reproducción
+        players[8].play(); // Inicia la reproducción
         break; 
      } 
 }
@@ -263,28 +275,31 @@ void reproducirSonido(FX fx) {
 void pararSonido(FX fx) {
   switch (fx) { // 
     case Recompensa:
-      players[0].close(); // Inicia la reproducción
+      players[0].close(); // para la reproducción
       break;
     case Win:
-      players[1].close(); // Inicia la reproducción
+      players[1].close(); // para la reproducción
       break;
     case Wrong:
-      players[2].close(); // Inicia la reproducción
+      players[2].close(); // para la reproducción
       break;
     case Burbuja:
-      players[3].close(); // Inicia la reproducción
+      players[3].close(); // para la reproducción
       break;
     case Fail:
-      players[4].close(); // Inicia la reproducción
+      players[4].close(); // para la reproducción
       break;
     case Fail2:
-      players[5].close(); // Inicia la reproducción
+      players[5].close(); // para la reproducción
       break;
     case Ko:
-      players[6].close(); // Inicia la reproducción
+      players[6].close(); // para la reproducción
       break;
     case Theme:
-      players[7].close(); // Inicia la reproducción
+      players[7].close(); // para la reproducción
+      break; 
+    case Bird:
+      players[8].close(); // para la reproducción
       break; 
   } 
 }
@@ -351,10 +366,10 @@ void mostrarPuntuacion() {
 
   fill(255); // Color blanco para el texto
   textSize(10); // tamaño del texto
-  textAlign(LEFT);
+  textAlign(LEFT); // alineamiento del texo a la izquierda
   text("Score:  ", width - 110, 35); // mostramos el texto
-  textAlign(RIGHT);
-  text(puntuacion, width - 25, 35); // mostramos la puntuación
+  textAlign(RIGHT);  // alineamiento del texo a la derecha
+  text(puntuacion, width - 20, 35); // mostramos la puntuación
 }
 
 // 
@@ -453,7 +468,7 @@ void comprobarBalasAEliminar() {
   balasAEliminar.clear();
 }
 
-// // Verificar colisiones enmtre burbujas y el jugador
+// Verificar colisiones enmtre burbujas y el jugador
 void comprobarColosionEntreBurbujaYJugador(){  
   for (Burbuja burbuja : burbujas) { // para cada burbuja
     if (colisionConJugador(burbuja)) { // fail
@@ -465,11 +480,24 @@ void comprobarColosionEntreBurbujaYJugador(){
 //
 void moverYMostrarBalas() {
   if(!pararJuego) {
+    
   // Mover y dibujar balas
   for (int i = balas.size() - 1; i >= 0; i--) {
     Bala bala = balas.get(i);
     bala.mover();
     bala.mostrar();
+
+    // comprobamos si la bala ha alcanzado al pajaro
+    for(Pajaro pajaro : pajaros) { //  
+
+      if (bala.colision(pajaro)) {
+        //println("La bala ha colisionado con el pajaro!");
+        pajaro.colisionado = true;
+        reproducirSonido(FX.Bird); // reproducimos fx
+        balasAEliminar.add(bala);     
+        puntuacion += 50;
+      } 
+    }
 
     // Verificar colisiones con burbujas
     for (int j = burbujas.size() - 1; j >= 0; j--) {
@@ -502,7 +530,8 @@ void moverYMostrarBalas() {
           if(burbuja.diametro/2 >= 5) {
             burbujas.add(nuevaBurbuja); 
           }
-        } 
+        }
+        
         reproducirSonido(FX.Burbuja); // reproducimos fx
         // eliminar la burbuja        
         burbuja.destruir();
@@ -512,6 +541,51 @@ void moverYMostrarBalas() {
   }
  }
 }
+
+// 
+void CrearBonificacion(float x, float y, boolean pajaro) {
+  if(pajaro && !bonificacionPajaroEnCurso) {
+      PImage img = null;
+      switch(int(random(1, 5))) {
+          case 1:
+            img = bonificacionImg; 
+          break;
+          case 2:
+             img = bonificacionTiempoImg; 
+          break;
+          case 3:
+             img = bonificacionTntImg; 
+          break;  
+          case 4:
+             img = bonificacionDulceImg; 
+          break;  
+      }  
+      bonificaciones.add(new Bonificacion(x, y, 30, img));
+  }
+  else if(!pajaro) { 
+    
+    println("entra");
+    
+    if(random(0, 10) > 7) { // % de probabilidad de generar bonificación
+        PImage img = null;
+        switch(int(random(1, 5))) {
+          case 1:
+            img = bonificacionImg; 
+          break;
+          case 2:
+             img = bonificacionTiempoImg; 
+          break;
+          case 3:
+             img = bonificacionTntImg; 
+          break;  
+          case 4:
+             img = bonificacionDulceImg; 
+          break;  
+      }  
+      bonificaciones.add(new Bonificacion(x, y, 30, img));
+     }  
+  } 
+ }
 
 // Mover y mostrar bonificaciones
 void moverYMostrarBonificaciones() {
@@ -531,6 +605,8 @@ void moverYMostrarBonificaciones() {
       // Incrementar la puntuación u aplicar bonificación al jugador
       puntuacion += 50; // sumar puntos al recoger la bonificación
       iterBonificacion.remove();// Eliminar la bonificación
+
+      bonificacionPajaroEnCurso = false;
     }
     
     if(bonificacion.toDelete) {
