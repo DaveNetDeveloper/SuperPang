@@ -19,7 +19,6 @@ class Burbuja {
   }
   
   void destruir() {
-     
     CrearBonificacion(this.x, this.y, false); // 
   }
   
@@ -69,7 +68,6 @@ class Burbuja {
   void mostrar() { // 
     image(imagen, x, y, diametro+5, diametro); 
   }
- 
   
   void detener() { // 
     detenida = true;

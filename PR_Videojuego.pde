@@ -84,7 +84,7 @@ int tiempoRestanteEnSegundos; //
 boolean bonificacionPajaroEnCurso = false; // 
 
 Minim minim; // objeto Minim para gestión de audios
-AudioPlayer[] players = new AudioPlayer[9]; // Puedes ajustar el tamaño según la cantidad de archivos de audio que tienes
+AudioPlayer[] players = new AudioPlayer[10]; // Puedes ajustar el tamaño según la cantidad de archivos de audio que tienes
 
 PFont font;
 
@@ -100,7 +100,8 @@ enum FX {
   Fail2,
   Ko,
   Theme,
-  Bird
+  Bird,
+  StartClick
 }
 // enumeración para facilitar la gestión de los estados de la partida
 enum LevelState {
@@ -227,6 +228,7 @@ void cargarFXs() {
   players[6] = minim.loadFile("sounds/ko.mp3");
   players[7] = minim.loadFile("sounds/theme.mp3");
   players[8] = minim.loadFile("sounds/gritoPajaro.mp3");
+  players[9] = minim.loadFile("sounds/game-click.wav");
 }
 
 // 
@@ -268,6 +270,10 @@ void reproducirSonido(FX fx) {
         players[8].rewind(); // Reinicia la reproducción
         players[8].play(); // Inicia la reproducción
         break; 
+      case StartClick:
+        players[9].rewind(); // Reinicia la reproducción
+        players[9].play(); // Inicia la reproducción
+        break;
      } 
 }
 
@@ -301,6 +307,9 @@ void pararSonido(FX fx) {
     case Bird:
       players[8].close(); // para la reproducción
       break; 
+    case StartClick:
+      players[9].close(); // para la reproducción
+      break;
   } 
 }
 
@@ -564,7 +573,7 @@ void CrearBonificacion(float x, float y, boolean pajaro) {
   }
   else if(!pajaro) { 
     
-    println("entra");
+    //println("entra");
     
     if(random(0, 10) > 7) { // % de probabilidad de generar bonificación
         PImage img = null;
@@ -625,6 +634,7 @@ boolean colisionConJugador(Burbuja burbuja) {
 void keyPressed() {
   
   if(blackScreen == false) { // 
+    reproducirSonido(FX.StartClick); // reproducimos fx
     blackScreen = true; // 
     background(0);  // Limpiar la pantalla
     reproducirSonido(FX.Theme); // reproducimos fx
