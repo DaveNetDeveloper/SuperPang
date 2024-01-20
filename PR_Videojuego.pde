@@ -1,9 +1,10 @@
 /*
-  Título: PR - Programación Creativa
-  Autor: David Gómez Martínez
-  Descripción: Este programa es una pequeña versión del videojuego arcade "Super Pang" que consiste en la 
-  eliminación de todas las burbujas a cambio de ganas puntos sin perder la vida. En pantalla vemos los siguientes elementos con las 
+  TÍTULO: PR - Programación Creativa
+  AUTOR: David Gómez Martínez
+  DESCRIPCIÓN: Este programa es una pequeña versión del videojuego arcade "Super Pang" que consiste en la 
+  eliminación de todas las burbujas a cambio de ganar puntos sin perder la vida. En pantalla vemos los siguientes elementos con las 
   siguientes intereacciones:
+    
     * Jugador: Es un avatar que puede desplazarse horizontalmente en el eje X (con las teclas de dirección '←' y '→') para seguir a las 
       burbujas con el objetivo de disparar balas hacia ellas para eliminarlas. El jugador pierde la única vida cuando es tocado por una burbuja,
       cuando es impctado por una pelota de un enemigo o cuando se agota el tiempo. 
@@ -12,7 +13,7 @@
       Al explotar se crean dos nuevas burbujas con un tamaño menor. Cada burbuja eliminada por el jugador suma puntos al marcador.
       Además, al explotar una burbuja, según una probabilidad random, se crea un tipo de bonificación para el jugador.  
                 
-    * Balas: Las balas son expulsadas hacia arriba por el jugador(con la tecla 'SPACE') desde el arma que lleva incorporada.
+    * Balas: Las balas son disparadas hacia arriba por el jugador(con la tecla 'SPACE') desde el arma que lleva incorporada.
       Las balas se destruyen al impactar con una burbuja o desaparecen por el limite superior de la ventana.
              
     * Bonificación: La recompensa es un objeto que aparece a veces cuando una burbuja es eliminada. Las bonificaciones 
@@ -36,7 +37,7 @@
       cuando se recoge una bonificación, se destruye una burbuja o una recompensa o se pierde/gana la partida. 
       Además se oye en todo momento una música de fondo.
                          
-    * Pausa: El juego se puede pausar al pulsar la tecla 'P'.
+    * Pausa/Reanudar: El juego se puede pausar y reanudar al pulsar la tecla 'P'.
 */
 
 // importamos las librerias necesarias
@@ -54,7 +55,7 @@ ArrayList<Bala> balas = new ArrayList<Bala>();
 ArrayList<Bala> balasAEliminar = new ArrayList<Bala>();
 
 boolean pararJuego = false;
-boolean blackScreen = false;
+boolean blackScreenExit = false;
 float jugadorX;
 int puntuacion = 0; // Variable para la puntuación
 int maxBurbujas = 1; // indice en base 0 
@@ -78,8 +79,9 @@ Pajaro[] pajaros = new Pajaro[1]; // Array de objetos Pajaro
 
 int tiempoTotal; // Duración total del temporizador en segundos
 int tiempoRestante; // Tiempo restante en milisegundos
+int tiempoRestanteEnSegundos; //  // Tiempo restante en segundos
 int tiempoInicio; // Tiempo en que se inició el temporizador
-int tiempoRestanteEnSegundos; // 
+int tiempoEnPausa; // Tiempo acumulado en pausa
 
 boolean bonificacionPajaroEnCurso = false; // 
 
@@ -115,17 +117,16 @@ enum LevelState {
 // función ppal. de inicilización del programa
 void setup() {
   
-  size(701, 404); // 
-  
+  size(701, 404); // tamaño de la ventana
   background(0);  // Fondo negro
   
-  // Carga la tipografía elegida
+  // carga la tipografía elegida
   font = createFont("fonts/ARCADE_I.TTF", 32);
   textFont(font);
   
   textAlign(CENTER, CENTER);
   textSize(15);
-  fill(255);  // Texto blanco
+  fill(255);  // texto blanco
   text("Presiona cualquier tecla para empezar", width/2, height/2);
   
   frameInicial = frameCount; // Guarda el número de fotograma actual
@@ -133,7 +134,6 @@ void setup() {
   cargarImagenes(); //
   crearBurbujas(); // 
   cargarFXs(); //
-  //reproducirSonido(FX.Theme); // reproducimos fx
   establecerTemporizador(); //
   crearPajaro(); // 
 }
@@ -141,9 +141,11 @@ void setup() {
 // función ppal. de renderización del programa 
 void draw() {
   
-  if(blackScreen) {
+  if(blackScreenExit) {
     background(fondo);// Establece la imagen como fondo
+    
     calcularYMostrarTemporizador(); // 
+    
     mostrarMensajesTemporales(); // 
     moverYDibujarJugador(); // Mover y dibujar jugador
     moverYMostrarBalas(); // 
@@ -204,6 +206,7 @@ void establecerTemporizador() {
 // Reinicia el temporizador
 void reiniciarTemporizador() {
   tiempoInicio = millis();
+  tiempoEnPausa = 0; // Reinicia el tiempo en pausa
 }
 
 //
@@ -302,7 +305,7 @@ void pararSonido(FX fx) {
       players[6].close(); // para la reproducción
       break;
     case Theme:
-      players[7].close(); // para la reproducción
+      players[7].pause(); // para la reproducción
       break; 
     case Bird:
       players[8].close(); // para la reproducción
@@ -349,8 +352,8 @@ void mostrarLevelState(LevelState levelState) {
   textSize(13); // tamaño del texto
   textAlign(CENTER); // 
 
-  String screenMessage = ""; // 
-  switch (levelState) { // 
+  String screenMessage = ""; // variable para el mensaje por pantalla
+  switch (levelState) { // según la enum LevelState
       case Complete:
           screenMessage = "Level Complete";
         break;
@@ -358,10 +361,10 @@ void mostrarLevelState(LevelState levelState) {
           screenMessage = "Level Failed";
         break;
       case Start:
-          screenMessage = "Start";
+          screenMessage = "Start"; 
         break;
       case CountDown:
-          screenMessage = str(tiempoRestanteEnSegundos);
+          screenMessage = str(tiempoRestanteEnSegundos); // cuenta atras
         break;
   } 
   text(screenMessage, width/2, height/2); // mostramos el texto con la puntuación
@@ -397,19 +400,32 @@ void mostrarTiempo(int tiempoRestante) {
 
 //
 void calcularYMostrarTemporizador() {
-  if(!pararJuego) {
-    tiempoRestante = tiempoTotal * 1000 - (millis() - tiempoInicio); // Actualiza el tiempo restante
-  }
-  mostrarTiempo(tiempoRestante); // 
-  tiempoRestanteEnSegundos = int(nf(tiempoRestante / 1000, 2)); // 
   
-  // Comprueba si el tiempo es inferior o igual a 10 segundos
-  if (tiempoRestanteEnSegundos > 0 && tiempoRestanteEnSegundos <= 10 && !pararJuego) {
-    mostrarLevelState(LevelState.CountDown);
-  }
+  //println("blackScreenExit: " + blackScreenExit);
+  //println("pararJuego: " + pararJuego);
   
-  // Comprueba si el tiempo ha llegado a cero y la partida ha terminado
-  if (tiempoRestante <= 0) setFailState();
+  if(!pararJuego && blackScreenExit) {
+     //println("pararJuego: " + pararJuego);
+     tiempoRestante = tiempoTotal * 1000 - (millis() - tiempoInicio - tiempoEnPausa); // Actualiza el tiempo restante
+      
+     float tiempoEnPausaEnSegundos = int(nf(tiempoEnPausa / 1000, 2)); // 
+     println("tiempoEnPausaEnSegundos: " + tiempoEnPausaEnSegundos);
+     
+     tiempoRestanteEnSegundos = int(nf(tiempoRestante / 1000, 2)); // 
+     if (tiempoRestanteEnSegundos > 0 && tiempoRestanteEnSegundos <= 10) {
+       mostrarLevelState(LevelState.CountDown);
+     }
+  
+     // Comprueba si el tiempo es inferior o igual a 10 segundos
+     tiempoRestanteEnSegundos = int(nf(tiempoRestante / 1000, 2)); // 
+     if (tiempoRestanteEnSegundos > 0 && tiempoRestanteEnSegundos <= 10 && !pararJuego) {
+       mostrarLevelState(LevelState.CountDown);
+     }
+    
+     // Comprueba si el tiempo ha llegado a cero y la partida ha terminado
+     if (tiempoRestante <= 0) setFailState();
+  } 
+  mostrarTiempo(tiempoRestante); //  mostramos el tiempo restante en segundos por pantalla
 }
 
 //
@@ -428,6 +444,28 @@ void setFailState() {
   pararSonido(FX.Theme); // función para parar un sonido según parametro Enum
   reproducirSonido(FX.Fail2); // reproducimos fx
   mostrarLevelState(LevelState.Fail); //
+}
+
+// 
+void reactivarJuego() {
+  for(Burbuja burbuja : burbujas) { // 
+    burbuja.reactivar();
+  } 
+  
+  for(Bala bala : balas) { // 
+    bala.reactivar();
+  }
+  
+  for(Bonificacion bonificacion : bonificaciones) { // 
+    bonificacion.reactivar();
+  }
+  
+  for(Pajaro pajaro : pajaros) { //  
+    pajaro.reactivar();
+    for (Pelota pelota : pajaro.pelotas) { // 
+      if(pelota != null) pelota.reactivar();
+    } 
+  } 
 }
 
 // 
@@ -572,9 +610,7 @@ void CrearBonificacion(float x, float y, boolean pajaro) {
       bonificaciones.add(new Bonificacion(x, y, 30, img));
   }
   else if(!pajaro) { 
-    
-    //println("entra");
-    
+     
     if(random(0, 10) > 7) { // % de probabilidad de generar bonificación
         PImage img = null;
         switch(int(random(1, 5))) {
@@ -598,6 +634,7 @@ void CrearBonificacion(float x, float y, boolean pajaro) {
 
 // Mover y mostrar bonificaciones
 void moverYMostrarBonificaciones() {
+  
   Iterator<Bonificacion> iterBonificacion = bonificaciones.iterator();
   while (iterBonificacion.hasNext()) {
     
@@ -633,28 +670,41 @@ boolean colisionConJugador(Burbuja burbuja) {
 // evento que recoge las pulsaciones del teclado
 void keyPressed() {
   
-  if(blackScreen == false) { // 
-    reproducirSonido(FX.StartClick); // reproducimos fx
-    blackScreen = true; // 
+  if(!blackScreenExit) { // 
+    reproducirSonido(FX.StartClick); // reproducimos el fx
+    blackScreenExit = true; // Marcamos que hemos salido de la pantalla inicial
     background(0);  // Limpiar la pantalla
     reproducirSonido(FX.Theme); // reproducimos fx
   } 
   
+  if (keyCode == 'P') { // parar el juego o salir del modo de pausa 
+  
+       reproducirSonido(FX.Wrong); // reproducimos efecto de sonido del modo de pausa
+       if(pararJuego) {  // si estamos en modo pausa
+          pararJuego = false; // lo desactivamos
+          reactivarJuego(); // rectivamos el juego 
+          reproducirSonido(FX.Theme); // reproducimos el tema de audio
+          
+          tiempoInicio = millis() - tiempoEnPausa; // restamos el tiempo en pausa para no descontarlo del timer ppal.
+          tiempoEnPausa = 0; // reiniciamos el contador de tiempo en pausa
+       }
+       else if (pararJuego == false) { // si no estamos en modo pausa
+         tiempoEnPausa = millis() - tiempoInicio; // Acumula el tiempo en pausa
+         pararJuego = true; // lo activamos
+         pararSonido(FX.Theme);  // paramos el tema de audio 
+       }
+  }
+    
   if(!pararJuego) {
     if (keyCode == LEFT) {
       jugadorX -= 10; // TODO: jugador.move()
-      jugador = jugadorIzquierdaImg; // a imagen de jugador iaquierda
+      jugador = jugadorIzquierdaImg; // a imagen de jugador izquierda
     }
     else if (keyCode == RIGHT) {
       jugadorX += 10; // TODO: jugador.move()
       jugador = jugadorDerechaImg; // a imagen de jugador derecha
     }
-    else if (keyCode == 'P') { // pasar el juego
-       pararJuego = true;
-       pararSonido(FX.Theme); 
-       reproducirSonido(FX.Wrong); // reproducimos fx
-    }
-    else if (key == ' ' || key == ' ') { // tecla espaciadora
+    else if (key == ' ') { // tecla espaciadora
       jugador = loadImage("images/jugador.png"); // a imagen de jugador arriba
       // Crear una nueva bala
       Bala bala = new Bala(jugadorX +5, height - jugador.height - 15, 10);

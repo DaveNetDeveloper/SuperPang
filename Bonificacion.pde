@@ -56,4 +56,8 @@ class Bonificacion {
   void detener() { // 
     detenida = true;
   }
+  
+  void reactivar() { // 
+    detenida = false;
+  }
 }

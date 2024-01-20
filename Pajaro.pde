@@ -33,6 +33,10 @@ class Pajaro {
     detenida = true;
   }
 
+  void reactivar() { // 
+    detenida = false;
+  }
+  
   void actualizar() {
     if(detenida) return;
     

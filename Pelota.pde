@@ -48,4 +48,8 @@ class Pelota {
   void detener() { // 
     detenida = true;
   }
+  
+  void reactivar() { // 
+    detenida = false;
+  }
 }

@@ -39,4 +39,7 @@ class Bala {
     detenida = true;
   }
   
+  void reactivar() { // 
+    detenida = false;
+  }
 }

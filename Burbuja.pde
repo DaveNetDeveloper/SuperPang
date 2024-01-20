@@ -72,4 +72,8 @@ class Burbuja {
   void detener() { // 
     detenida = true;
   }
+  
+  void reactivar() { // 
+    detenida = false;
+  }
 }
