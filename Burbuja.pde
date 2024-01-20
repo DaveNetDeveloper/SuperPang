@@ -1,3 +1,4 @@
+// Objeto Burbuja
 //
 class Burbuja {
   float x, y, diametro; // variables para posición x, y y para el diametro
@@ -9,6 +10,7 @@ class Burbuja {
   boolean colisionada = false; // Bandera para controlar si la burbuja ha colisionado
   PImage imagen = loadImage("images/burbuja.png");
   
+  // contructor que recibe las posiciones y diametro
   Burbuja(float x, float y, float diametro) {
     this.x = x;
     this.y = y;
@@ -18,23 +20,25 @@ class Burbuja {
     this.velocidadX = random(-1, 1);
   }
   
-  void destruir() {
-    CrearBonificacion(this.x, this.y, false); // 
+  void destruir() { // función al destruirse una burbuja
+    CrearBonificacion(this.x, this.y, false); // función para crear una bonificación aleatotoria 
   }
   
-  boolean haColisionado() {
+  boolean haColisionado() { // devuelve si la burbuja ha sido olisionada
     return colisionada;
   }
   
-  void marcarColision() {
+  void marcarColision() { // función para indicar la burbuja como colisionada
     colisionada = true;
   }
   
+  // función para indicar la burbuja como no colisionada
   void marcarNoColisionada() {
     colisionada = false;
   }
-
-  void mover() {
+  
+  // función para mover la burbuja
+  void mover() { 
     // Si la burbuja está detenida, no realizar movimientos
     if (detenida) return;
 
@@ -65,15 +69,15 @@ class Burbuja {
     }
   }
 
-  void mostrar() { // 
+  void mostrar() { // función para mostrar la burbuja
     image(imagen, x, y, diametro+5, diametro); 
   }
   
-  void detener() { // 
+  void detener() { // función para detener la burbuja
     detenida = true;
   }
   
-  void reactivar() { // 
+  void reactivar() { // función para reactivar la burbuja 
     detenida = false;
   }
 }

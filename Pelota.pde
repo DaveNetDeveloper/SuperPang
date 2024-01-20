@@ -1,14 +1,15 @@
+// Objeto Pelota
 // 
 class Pelota {
   float x, y; // Posición del enemigo
   float velocidadX; // Velocidad horizontal del enemigo
   float velocidadY; // Velocidad vertical del enemigo
   float gravedad; // Gravedad simulada
-  PImage imagen = loadImage("images/pelota.png"); // 
-  float tamaño; // 
-  boolean detenida = false; // 
+  PImage imagen = loadImage("images/pelota.png"); // imagen de la pelota
+  float tamaño; // tamaño de la pelota
+  boolean detenida = false; // flag a false
 
-  // 
+  // contructor que recibe las posiciones , velocidad, fuerza de gravedad y tamaño
   Pelota(float x, float y, float velocidadX, float velocidadY, float gravedad, float tamaño) {
     this.x = x;
     this.y = y;
@@ -18,7 +19,7 @@ class Pelota {
     this.tamaño = tamaño;
   }
 
-  void actualizar() {
+  void actualizar() { // funcion para actualizar la posición y propiedades de la pelota
     if(detenida) return;
     
     // Actualiza la posición del enemigo
@@ -36,20 +37,20 @@ class Pelota {
     }
   }
   
-  void dibujar() { // Dibuja el enemigo 
+  void dibujar() { // Función para dibujar la pelota 
     image(imagen, x, y, tamaño, tamaño);
   }
   
-  boolean colisionConJugador() { //
+  boolean colisionConJugador() { // detecta si la pelota ha colisionado con el jugador
     float distancia = dist(x, y, jugadorX, height - jugador.height / 2);
     return distancia < tamaño / 2 + jugador.width / 2;
   }
   
-  void detener() { // 
+  void detener() { // función para detener el pajaro
     detenida = true;
   }
   
-  void reactivar() { // 
+  void reactivar() { // función para reativar el pajaro
     detenida = false;
   }
 }

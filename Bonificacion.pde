@@ -1,3 +1,4 @@
+// Objeto Bonificacion
 //
 class Bonificacion {
   float x, y;
@@ -9,6 +10,7 @@ class Bonificacion {
   boolean mostrarImagen;
   boolean detenida = false;
   
+  // contructor que recibe las posiciones, tamaño e imagen 
   Bonificacion(float x, float y, float tamaño, PImage pBonificacionImg) {
     this.x = x;
     this.y = y;
@@ -21,7 +23,7 @@ class Bonificacion {
     mostrarImagen = true;
   }
   
-  void mover() { // 
+  void mover() { // función para calcular la posicion y mover la bonificación 
     if(detenida) return; // 
     
     if (y + this.tamaño/2 <= height) { // 
@@ -40,7 +42,7 @@ class Bonificacion {
     }
   }
   
-  void mostrar() { //  
+  void mostrar() {  // función para calcular la visibilidad de la bonificación   
     if(temporizador.getSecondsRemaining() < 5 && !detenida) { 
       if (frameCount % 20 == 0) {  // según la frecuencia de parpadeo 
         mostrarImagen = !mostrarImagen;
@@ -53,11 +55,11 @@ class Bonificacion {
     }
   }
   
-  void detener() { // 
+  void detener() { // función para parar la bonificación 
     detenida = true;
   }
   
-  void reactivar() { // 
+  void reactivar() { // función para reactivar la bonificación 
     detenida = false;
   }
 }

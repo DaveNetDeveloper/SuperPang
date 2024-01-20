@@ -1,4 +1,5 @@
-// Clase que encapsula el comportamiento del objeto Pajaro
+// Objeto que encapsula el comportamiento del objeto Pajaro
+// 
 class Pajaro {
   float x;
   float y;
@@ -17,7 +18,7 @@ class Pajaro {
   int cambioFrames = 30;  // Número de frames durante los cuales se cambiará la imagen1 por la imagen2
   int frameActual = 0; // posicion inicial para el contador de frames
   
-  // 
+  // contructor que recibe las posiciones, amplitud, frecuencia y velocidad
   Pajaro(float x, float y, float amplitudY, float frecuenciaY, float velocidadX) {
     this.x = x;
     this.y = y;
@@ -29,15 +30,15 @@ class Pajaro {
     temporizador.start(); // Inicia el temporizador
   }
 
-  void detener() { // 
+  void detener() { // función para detener el pajaro 
     detenida = true;
   }
 
-  void reactivar() { // 
+  void reactivar() { // función para reactivar el pajaro
     detenida = false;
   }
   
-  void actualizar() {
+  void actualizar() { // función para calcular y mover al pajaro
     if(detenida) return;
     
     // Actualiza la posición del pájaro
@@ -53,20 +54,18 @@ class Pajaro {
         this.disparar = true;
       }
   }
-  
-  // 
-  void dibujar() {
+ 
+  void dibujar() { // Función para dibujar el pajaro 
     
-    if(!colisionado) {
+    if(!colisionado) { // si el pajaro no es colisionado por una bala
       image(imagen, x, y, 60, 60); //
     }
-    else {
-      
+    else { // si el pajaro ha sido colisionado
       CrearBonificacion(x, y, true); //  
       bonificacionPajaroEnCurso = true;
       //println("bonificacionPajaroEnCurso: " + bonificacionPajaroEnCurso);
       
-      if (frameActual < cambioFrames) {
+      if (frameActual < cambioFrames) { 
         // Cambiar la imagen del pajaro durante los frames indicados en 'cambioFrames'
         image(imagen2, x, y, 60, 60); //
         frameActual++;
@@ -78,7 +77,8 @@ class Pajaro {
     }   
   }
   
-  void disparar() { // 
+  // función para disparar la  pelota
+  void disparar() {
     float _velocidadX = 2; // Velocidad horizontal
     float _velocidadY = -5; // Velocidad vertical inicial (hacia arriba)
     float _gravedad = 0.2; // factor de fuerza de la gravedad
